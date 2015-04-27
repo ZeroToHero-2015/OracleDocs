@@ -1,0 +1,38 @@
+--functii single row
+
+select upper('BUBU mihai') c1, 
+       length('BUBU mihai') c2, 
+       rpad(30,4,'$') c3,
+       trim('b' from lower('BUBU mihai')) c4, 
+       trim('  test    jjjj   ') c5,
+       round(17.98765,2) c6,
+       trunc(17.98765,3) c7
+      from dual;
+        
+select months_between('01-SEP-1995','01-JAN-1994'), 
+       trunc(sysdate, 'MM')
+        from dual; 
+
+Conversie implicita number-varchar
+    select '2'+2 from dual
+        
+select to_char(sysdate,'DAY DD/RM/RRRR','nls_date_language=ROMANIAN'), 
+        to_date('01/01/2000','DD/MM/RRRR'),
+       to_char(100000,'$999G999G999D999','NLS_NUMERIC_CHARACTERS = '',.'''),
+       to_number('     $100,000.000','$999G999G999D999')
+       from dual;
+       
+       
+select to_char(sysdate,'DD/Month/RRRR HH24:MI:SS','nls_date_language=ROMANIAN')
+        from dual       
+       
+ -- case and decode      
+select case DEPARTMENT_ID
+            when 10 then 'test1'
+            when 20 then 'Test2'
+        else 'OOps'
+       end,
+       decode(DEPARTMENT_ID,10,'test1',20,'Test2','OOps'),
+       DEPARTMENT_ID,
+       nvl(to_char(COMMISSION_PCT),'X')
+       from employees;

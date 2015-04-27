@@ -1,0 +1,24 @@
+-- controlul tranzactiilor
+
+delete emp_test
+where id not between 100 and 110;
+
+savepoint a;
+
+INSERT INTO EMP_TEST (ID, NUME, HIRE_DATE) 
+VALUES ( 1, 'BUBU Mihai', add_months(trunc(sysdate,'MM')-4,-48));
+
+update EMP_TEST
+set salary = 10000
+where salary is null;
+
+savepoint b;
+
+INSERT INTO EMP_TEST (ID, NUME, HIRE_DATE) 
+VALUES ( 2, 'Test Test', add_months(trunc(sysdate,'MM')-4,-48));
+
+rollback to savepoint b;
+
+rollback to savepoint a;
+
+rollback;

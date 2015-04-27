@@ -1,0 +1,33 @@
+-- seturi de date
+
+select first_name, salary, hire_date
+        from employees
+minus
+select trim(substr(nume,1,instr(nume,' ',1,1))) first_name, salary, hire_date
+        from emp_test;
+        
+select trim(substr(nume,1,instr(nume,' ',1,1))) first_name, salary, hire_date
+        from emp_test
+minus
+select first_name, salary, hire_date
+        from employees;        
+        
+select first_name, salary, hire_date
+        from employees
+intersect
+select trim(substr(nume,1,instr(nume,' ',1,1))) first_name, salary, hire_date
+        from emp_test;
+        
+select first_name, salary, hire_date
+        from employees
+union 
+select trim(substr(nume,1,instr(nume,' ',1,1))) first_name, salary, hire_date
+        from emp_test;
+        
+select first_name, salary, hire_date
+        from employees
+union all
+select trim(substr(nume,1,instr(nume,' ',1,1))) first_name, salary, hire_date
+        from emp_test;               
+        
+                          

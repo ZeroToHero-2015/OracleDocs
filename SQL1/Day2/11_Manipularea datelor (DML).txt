@@ -1,0 +1,36 @@
+-- DML
+
+INSERT INTO EMP_TEST (ID, NUME, HIRE_DATE) 
+VALUES ( 1, 'BUBU Mihai', add_months(trunc(sysdate,'MM')-4,-48));
+
+INSERT INTO EMP_TEST (ID, NUME, SALARY, HIRE_DATE) 
+select employee_id, first_name||' '||last_name, salary, hire_date
+from employees
+where employee_id between 101 and 107;
+
+commit;
+
+update EMP_TEST
+set salary = 10000
+where salary is null;
+
+
+delete emp_test
+where HIRE_DATE = add_months(trunc(sysdate,'MM')-4,-48); 
+
+
+merge into EMP_TEST et
+using (select employee_id, first_name||' '||last_name emp_nume, salary, hire_date, department_id
+            from employees) e
+on (et.id = e.employee_id)
+WHEN MATCHED THEN
+	UPDATE SET
+    et.nume = e.emp_nume,
+    et.salary = e.salary,
+    et.hire_date = e.hire_date,
+    et.dep_id = e.department_id
+WHEN NOT MATCHED THEN
+	INSERT (ID, NUME, SALARY, HIRE_DATE, DEP_ID)
+    VALUES (e.employee_id, e.emp_nume, e.salary, e.hire_date, e.department_id);   
+    
+commit;
