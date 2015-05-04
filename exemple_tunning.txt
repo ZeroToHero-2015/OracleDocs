@@ -1,0 +1,244 @@
+--planul de executie 
+
+
+
+EXPLAIN PLAN FOR
+   select e.*, d.department_name from HR.EMPLOYEES e, HR.DEPARTMENTS d
+   where E.DEPARTMENT_ID=D.DEPARTMENT_ID;
+   
+select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic'));   
+
+ALTER INDEX hr.DEPT_ID_PK INVISIBLE;
+ALTER INDEX hr.DEPT_ID_PK VISIBLE;
+
+-- hinturi
+
+-- hint sa se duca pe index
+
+ EXPLAIN PLAN FOR
+ 
+ select /*+ INDEX (E EMP_DEPARTMENT_IX) */
+     e.*, d.department_name from HR.EMPLOYEES e, HR.DEPARTMENTS d
+   where E.DEPARTMENT_ID=D.DEPARTMENT_ID;
+   
+   select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic'));   
+ 
+
+-- hint sa se joineze in ordinea din from
+
+ EXPLAIN PLAN FOR
+ 
+ select /*+ORDERED INDEX (E EMP_DEPARTMENT_IX) */
+    e.first_name, e.job_id, d.department_name 
+    from   HR.EMPLOYEES e, HR.DEPARTMENTS d
+   where E.DEPARTMENT_ID = D.DEPARTMENT_ID ;
+   
+   
+   
+   select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic'));   
+ 
+ 
+  EXPLAIN PLAN FOR
+ 
+ select /*+ORDERED INDEX (E EMP_DEPARTMENT_IX) */
+    e.first_name, e.job_id, d.department_name 
+    from   HR.DEPARTMENTS d,  HR.EMPLOYEES e
+   where  D.DEPARTMENT_ID = E.DEPARTMENT_ID ;
+
+
+-- forall
+
+drop TABLE hr.employees_temp;
+CREATE TABLE hr.employees_temp AS SELECT * FROM hr.employees;
+
+DECLARE
+  TYPE NumList IS VARRAY(20) OF NUMBER;
+  depts NumList := NumList(10, 30, 70);  -- department numbers
+BEGIN
+  FOR i IN depts.FIRST..depts.LAST LOOP
+    DELETE FROM hr.employees_temp
+    WHERE department_id = depts(i);
+  END LOOP;
+END;
+
+
+
+
+
+DROP TABLE hr.employees_temp;
+CREATE TABLE hr.employees_temp AS SELECT * FROM hr.employees;
+
+DECLARE
+  TYPE NumList IS VARRAY(20) OF NUMBER;
+  depts NumList := NumList(10, 30, 70);  -- department numbers
+BEGIN
+  FORALL i IN depts.FIRST..depts.LAST
+    DELETE FROM hr.employees_temp
+    WHERE department_id = depts(i);
+END;
+
+
+
+-- cursor implicit vs explicit
+
+
+CREATE OR REPLACE PROCEDURE true_cursor_comparison AS
+  l_loops  NUMBER := 10000;
+  l_dummy  dual.dummy%TYPE;
+  l_start  NUMBER;
+
+  CURSOR c_dual IS
+    SELECT dummy
+    FROM dual;
+BEGIN
+  -- Time explicit cursor.
+  l_start := DBMS_UTILITY.get_time;
+
+  FOR i IN 1 .. l_loops LOOP
+    OPEN  c_dual;
+    FETCH c_dual
+    INTO  l_dummy;
+
+    IF (c_dual%NOTFOUND) THEN
+      RAISE NO_DATA_FOUND;
+    END IF; 
+
+    FETCH c_dual
+    INTO l_dummy;
+    IF (c_dual%FOUND) THEN
+      RAISE TOO_MANY_ROWS;
+    END IF;
+    CLOSE c_dual;
+  END LOOP;
+
+  DBMS_OUTPUT.put_line('Explicit: ' || 
+                       (DBMS_UTILITY.get_time - l_start));
+
+  -- Time implicit cursor.
+  l_start := DBMS_UTILITY.get_time;
+
+  FOR i IN 1 .. l_loops LOOP
+    SELECT dummy
+    INTO   l_dummy
+    FROM   dual;
+  END LOOP;
+
+  DBMS_OUTPUT.put_line('Implicit: ' || 
+                       (DBMS_UTILITY.get_time - l_start));
+END true_cursor_comparison;
+
+
+
+-- apelul
+
+exec true_cursor_comparison;
+
+
+-- partitionare range
+
+
+CREATE TABLE hr.employees_copy1 
+(employee_id  NUMBER(5), 
+first_name VARCHAR2(30), 
+last_name VARCHAR2(30), 
+hire_date date, 
+salary    number)
+PARTITION BY RANGE(hire_date) 
+(
+PARTITION hire_date_2003 VALUES LESS THAN(TO_DATE('01/01/2003','DD/MM/YYYY')),
+PARTITION hire_date_2005 VALUES LESS THAN(TO_DATE('01/01/2005','DD/MM/YYYY')),
+PARTITION hire_date_2008 VALUES LESS THAN(TO_DATE('01/01/2008','DD/MM/YYYY')),
+PARTITION hire_date_others VALUES LESS THAN (MAXVALUE) 
+);
+
+
+select table_name, partition_name, tablespace_name from user_tab_partitions ;
+
+insert into hr.employees_copy1 select employee_id, first_name, last_name, hire_date, salary from hr.employees;
+commit;
+
+alter table hr.employees_copy1 move partition  HIRE_DATE_2008 tablespace system;
+select table_name, partition_name, tablespace_name from user_tab_partitions ;
+
+
+-- partitionare list
+
+CREATE TABLE hr.employees_copy2
+(employee_id  NUMBER(5), 
+first_name VARCHAR2(30), 
+last_name VARCHAR2(30), 
+hire_date date, 
+salary    number,
+job_id varchar2(30) 
+)
+PARTITION BY list(job_id) 
+(
+PARTITION Manager VALUES ('FI_MGR','AC_MGR','SA_MAN','PU_MAN','ST_MAN','MK_MAN'),
+PARTITION Representative VALUES('MK_REP','HR_REP','PR_REP'),
+PARTITION others VALUES (DEFAULT) 
+);
+insert into hr.employees_copy2 select employee_id, first_name, last_name, hire_date, salary, job_id from hr.employees;
+commit;
+
+
+
+-- partitionare hash
+
+CREATE TABLE hr.employees_copy3
+(employee_id  NUMBER(5), 
+first_name VARCHAR2(30), 
+last_name VARCHAR2(30), 
+hire_date date, 
+salary    number,
+job_id varchar2(30) 
+)
+PARTITION BY HASH (employee_id)
+partitions 4;
+
+
+-- index local
+CREATE INDEX hr.employees_local_idx ON hr.employees_copy2 (employee_id) LOCAL;
+
+--index global
+
+CREATE INDEX hr.employees_global_idx ON hr.employees_copy1 (employee_id);   
+
+--DBA_PART_INDEXES
+
+
+
+drop index hr.employees_local_idx ;
+CREATE INDEX hr.employees_local_idx ON hr.employees_copy2 (employee_id) LOCAL;
+EXPLAIN PLAN FOR
+select * from hr.employees_copy2 where employee_id=121;
+select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic'));   
+alter index hr.employees_local_idx  unusable;
+EXPLAIN PLAN FOR
+select * from hr.employees_copy2 where employee_id=121;
+select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic'));   
+
+
+CREATE INDEX hr.employees_global_idx ON hr.employees_copy1 (employee_id);   
+
+
+ALTER TABLE hr.employees_copy1 DROP PARTITION HIRE_DATE_2003;  
+EXPLAIN PLAN FOR
+select * from hr.employees_copy1 where employee_id=200;
+select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic')); 
+alter INDEX hr.employees_global_idx rebuild;
+EXPLAIN PLAN FOR
+select * from hr.employees_copy1 where employee_id=200;
+select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic')); 
+
+ ALTER TABLE hr.employees_copy1 DROP PARTITION HIRE_DATE_2005 UPDATE GLOBAL INDEXES;
+ EXPLAIN PLAN FOR
+select * from hr.employees_copy1 where employee_id=200;
+select plan_table_output
+   from table(dbms_xplan.display('plan_table',null,'basic')); 
