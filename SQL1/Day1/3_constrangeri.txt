@@ -1,0 +1,33 @@
+-- constrangeri
+
+create table dep2_test
+    (id number,
+     descriere varchar2(20) NOT NULL,
+     observatii varchar2(100) default 'N/A',
+     constraint dep2_test_PK primary key (id));
+     
+insert into dep2_test (ID, DESCRIERE)
+select department_id, department_name
+from departments; 
+
+commit;     
+
+ALTER TABLE EMP_TEST ADD 
+CONSTRAINT EMP_TEST_FK
+ FOREIGN KEY (DEP_ID)
+ REFERENCES DEP2_TEST (ID);  
+ 
+ALTER TABLE EMP_TEST  
+DISABLE CONSTRAINT EMP_TEST_FK;
+
+
+ALTER TABLE EMP_TEST  
+ENABLE CONSTRAINT EMP_TEST_FK;
+
+ALTER TABLE EMP_TEST  
+DROP CONSTRAINT EMP_TEST_FK;
+   
+drop table dep_test;
+               
+     
+drop table dep2_test;    

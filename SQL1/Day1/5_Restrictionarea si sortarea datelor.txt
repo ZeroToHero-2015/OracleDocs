@@ -1,0 +1,32 @@
+select *
+        from employees
+        where salary+200 >= 4000; 
+        
+select last_name, hire_date, salary
+        from employees
+        where hire_date between '01-JAN-1994' and '01-AUG-1994'
+        and salary > 7000;
+        
+select *
+        from departments
+        order by 2 desc;   
+        
+       
+select *
+        from employees
+        where last_name like 'K%g'; 
+        
+select *
+        from employees
+        where last_name like 'K%'
+        and salary >= 5000
+        and commission_pct is not null
+        order by department_id desc, first_name;   
+		
+Comparati rezultatele:
+SQL> SELECT  FIRST_NAME, SALARY*12 + COMMISSION_PCT REM
+FROM EMPLOYEES;
+Cu rezultatele:
+SQL> SELECT  FIRST_NAME, SALARY*12 + NVL(COMMISSION_PCT , 0) REM
+FROM EMPLOYEES;
+		

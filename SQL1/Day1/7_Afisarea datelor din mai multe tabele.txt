@@ -1,0 +1,53 @@
+--EQUIJOIN (NATURAL JOIN)
+select last_name||' '||first_name nume, department_name
+        from employees e
+             , departments d
+        where e.DEPARTMENT_ID = d.DEPARTMENT_ID; 
+        
+select last_name||' '||first_name nume, department_name
+        from employees join departments
+        using (DEPARTMENT_ID);         
+
+--OUTHER JOIN (LEFT and RIGHT)   
+--LEFT - aduc toti angajatii chiar daca nu au departament     
+select last_name||' '||first_name nume, department_name
+        from employees e
+             , departments d
+        where e.DEPARTMENT_ID = d.DEPARTMENT_ID(+);
+
+select last_name||' '||first_name nume, department_name
+        from employees e
+             LEFT OUTER JOIN departments d
+        on e.DEPARTMENT_ID = d.DEPARTMENT_ID;
+
+--putem folosi clauza USING doar daca numele coloanei de legatura este acelasi
+select last_name||' '||first_name nume, department_name
+        from employees e
+             LEFT OUTER JOIN departments d
+        using(DEPARTMENT_ID);
+
+--RIGHT - aduc toate departamentele, chiar daca nu au nici un angajat      
+select last_name||' '||first_name nume, department_name
+        from employees e 
+             , departments d
+        where e.DEPARTMENT_ID(+) = d.DEPARTMENT_ID;
+
+select last_name||' '||first_name nume, department_name
+        from employees e
+             RIGHT OUTER JOIN departments d
+        on e.DEPARTMENT_ID = d.DEPARTMENT_ID;
+
+--SELF JOIN - aduc toti angajatii 
+SELECT e1.last_name||' works for '||e2.last_name 
+   "Employees and Their Managers"
+   FROM employees e1, employees e2 
+   WHERE e1.manager_id = e2.employee_id
+
+--FULL OUTHER JOIN        
+select last_name||' '||first_name nume, department_name
+        from employees e full outer join departments d
+        on (e.DEPARTMENT_ID = d.DEPARTMENT_ID);        
+
+select last_name||' '||first_name nume, department_name
+        from employees e full outer join departments d
+        using (DEPARTMENT_ID); 

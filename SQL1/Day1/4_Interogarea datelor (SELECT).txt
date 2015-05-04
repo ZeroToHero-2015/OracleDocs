@@ -1,0 +1,22 @@
+select *
+        from locations;
+        
+select *
+        from dual;        
+
+
+select street_address as "Adresa mea", postal_code, cIty
+        from locations;
+        
+select distinct department_id
+        from employees;        
+        
+select salary, salary+100*3 as "sal test", (salary+100)*3 sal2
+        from employees;
+        
+select salary, commission_pct, salary*12*commission_pct as "annual salary1"
+        from employees;
+        
+select 'Address: '||street_address||', '||postal_code||', '||city x
+        from locations;
+        

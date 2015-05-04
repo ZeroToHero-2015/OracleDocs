@@ -1,0 +1,14 @@
+select avg(salary), count(1), sum(salary), max(salary), department_id
+        from employees
+        group by department_id; 
+        
+select avg(salary), count(1), sum(salary), max(salary), department_id
+        from employees
+        group by department_id
+        having avg(salary)>6000; 
+        
+select avg(salary), count(1), sum(salary), max(salary), department_id
+        from employees
+        where commission_pct is not null
+        group by department_id
+        having avg(salary)>6000;

@@ -1,0 +1,40 @@
+-- tabele
+
+create table dep_test
+    (id number,
+     descriere varchar2(20),
+     observatii varchar2(100) default 'N/A');
+     
+INSERT INTO DEP_TEST(ID, DESCRIERE) 
+VALUES ( 1, 'Test' );
+
+commit;     
+     
+create table dep2_test as
+select department_id, department_name
+from departments;  
+
+desc dep_test;
+
+select *
+        from user_tables;
+        
+select *
+        from user_tab_cols;
+        
+        
+alter table dep_test add (test1 number(3));  
+
+alter table dep_test modify (test1 varchar2(3)); 
+
+alter table dep_test drop (test1); 
+
+drop table dep_test;
+
+rename dep2_test to dep_test; 
+
+truncate table dep_test;
+
+comment on TABLE dep_test is 'Tabela mea de test';
+
+comment on COLUMN dep_test.DEPARTMENT_NAME is 'Nume departament';
